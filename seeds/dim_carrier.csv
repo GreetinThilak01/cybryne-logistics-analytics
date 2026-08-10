@@ -1,0 +1,10 @@
+carrier_key,carrier_code,carrier_name,carrier_mode,carrier_type,primary_lanes,contract_start_date,is_active
+1,MCL,Meridian Container Line,Ocean,VOCC,India → USA,2022-04-01,True
+2,IPS,IndoPacific Shipping,Ocean,VOCC,India → USA,2021-07-01,True
+3,GBL,GulfBridge Lines,Ocean,VOCC,India → UAE,2020-01-01,True
+4,BAM,BlueAnchor Marine,Ocean,VOCC,India → USA / UAE,2022-10-01,True
+5,VOS,Vanguard Ocean Services,Ocean,VOCC,India → USA / UAE (spot),2023-06-01,True
+6,ASW,AeroSwift Cargo,Air,Airline,India → USA,2023-04-01,True
+7,SKL,SkyLane Air Freight,Air,Airline,India → USA / UAE,2022-02-01,True
+8,FGC,Falcon Gulf Cargo,Air,Airline,India → UAE,2021-09-01,True
+9,TCA,TransContinental Air,Air,Airline,India → USA,2023-11-01,True

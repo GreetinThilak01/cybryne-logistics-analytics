@@ -1,0 +1,16 @@
+charge_type_key,charge_code,charge_name,charge_category,applies_to_mode,is_passthrough_expected
+1,OFR,Ocean Freight,Base Cost,Ocean,True
+2,AFR,Air Freight,Base Cost,Air,True
+3,THC,Origin Terminal Handling,Base Cost,Both,True
+4,DHC,Destination Handling,Base Cost,Both,True
+5,CUS,Customs Clearance,Base Cost,Both,True
+6,DOC,Documentation Fee,Base Cost,Both,True
+7,TRK,Transport / Drayage,Base Cost,Both,True
+8,BAF,Bunker Adjustment Factor,Surcharge,Ocean,True
+9,CAF,Currency Adjustment Factor,Surcharge,Ocean,True
+10,PSS,Peak Season Surcharge,Surcharge,Both,True
+11,DET,Detention,Surcharge,Ocean,True
+12,DEM,Demurrage,Surcharge,Ocean,True
+13,FSC,Fuel Surcharge (Air),Surcharge,Air,True
+14,SSC,Security Surcharge (Air),Surcharge,Air,True
+15,WRS,War Risk Surcharge,Surcharge,Both,True

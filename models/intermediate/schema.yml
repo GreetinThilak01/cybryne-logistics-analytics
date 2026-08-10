@@ -1,0 +1,77 @@
+version: 2
+
+models:
+  - name: int_shipments_conformed
+    description: >
+      Business-rule layer for shipments. Encodes the §6.1 on-time definition
+      and §6.5 transit variance; joins carrier and customer names for
+      downstream convenience.
+    tests:
+      # §6.5 must hold arithmetically on every delivered row
+      - dbt_utils.expression_is_true:
+          expression: "transit_variance_days = actual_transit_days - committed_transit_days"
+          config:
+            where: "actual_transit_days is not null"
+    columns:
+      - name: is_on_time
+        description: §6.1 agreed definition; null while undelivered.
+        tests:
+          - not_null:
+              config:
+                where: "actual_delivery_date is not null"
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: int_charges_classified
+    description: Charge lines classified Base Cost vs Surcharge with §6.2 post-closure flag.
+    columns:
+      - name: charge_key
+        tests: [unique, not_null]
+      - name: charge_category
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["Base Cost", "Surcharge"]
+
+  - name: int_invoices_matched
+    description: >
+      Invoice lines matched to jobs via the voucher job reference; unmatched
+      lines flagged (~1.5% by design). §6.4 billing lag on first-original rows.
+    columns:
+      - name: invoice_line_key
+        tests: [unique, not_null]
+      - name: is_matched
+        tests: [not_null]
+
+  - name: int_shipment_financials
+    description: The ops↔finance join — one row per completed job with revenue, cost, margin.
+    tests:
+      # §6.2 must hold arithmetically on every row
+      - dbt_utils.expression_is_true:
+          expression: "gross_margin_inr = revenue_billed_inr - total_cost_inr"
+      # §6.4: a job cannot be billed before it completes (generator floor is 2 days)
+      - dbt_utils.expression_is_true:
+          expression: "billing_lag_days >= 0"
+          config:
+            where: "billing_lag_days is not null"
+    columns:
+      - name: shipment_key
+        tests: [unique, not_null]
+
+  - name: int_invoice_settlement
+    description: One authoritative row per receivable invoice; §6.9 outstanding AR and ageing.
+    tests:
+      # outstanding must reconcile to invoiced minus received (clipped at zero)
+      - dbt_utils.expression_is_true:
+          expression: "outstanding_inr = greatest(round(invoice_total_inr - amount_received_inr, 2), 0.00)"
+      # settled flag must agree with the arithmetic
+      - dbt_utils.expression_is_true:
+          expression: "is_settled = (round(invoice_total_inr - amount_received_inr, 2) <= 0.01)"
+    columns:
+      - name: invoice_number
+        tests: [unique, not_null]
+      - name: aging_bucket
+        tests:
+          - accepted_values:
+              values: ["Settled", "Current", "0-30", "31-60", "61-90", "90+"]

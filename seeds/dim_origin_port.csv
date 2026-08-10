@@ -1,0 +1,8 @@
+port_key,port_code,port_name,port_type,city,country,region,trade_lane_role
+1,INNSA1,JNPT — JNPCT Terminal (Nhava Sheva),Seaport,Mumbai,India,India,Origin
+2,INNSA,Nhava Sheva — GTI Terminal,Seaport,Mumbai,India,India,Origin
+3,INMAA,Chennai Port,Seaport,Chennai,India,India,Origin
+4,INMUN,Mundra Port,Seaport,Mundra,India,India,Origin
+5,BOM,Chhatrapati Shivaji Maharaj Intl Airport,Airport,Mumbai,India,India,Origin
+6,MAA,Chennai International Airport,Airport,Chennai,India,India,Origin
+7,AMD,Sardar Vallabhbhai Patel Intl Airport,Airport,Ahmedabad,India,India,Origin

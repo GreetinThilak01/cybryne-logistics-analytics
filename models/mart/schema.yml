@@ -1,0 +1,313 @@
+version: 2
+
+# Mart-layer documentation mirrors the data dictionary in blueprint §5:
+# every column carries its business meaning and an example value.
+
+models:
+  - name: fact_shipments
+    description: >
+      The operational heart — every OTD, transit-variance, volume and status
+      KPI. Grain: one row per shipment (Logi-Sys job).
+    columns:
+      - name: shipment_key
+        description: "Internal shipment ID. Example: 20481"
+        tests: [unique, not_null]
+      - name: job_number
+        description: "The job number everyone quotes on phone calls. Example: MUM-SE-24-01847"
+      - name: customer_key
+        description: "Who the cargo belongs to. Example: 104"
+        tests:
+          - relationships:
+              to: ref('dim_customer')
+              field: customer_key
+      - name: carrier_key
+        description: "Who is moving it. Example: 7"
+        tests:
+          - relationships:
+              to: ref('dim_carrier')
+              field: carrier_key
+      - name: branch_key
+        description: "Which office runs the job. Example: 1"
+      - name: mode_key
+        description: "Ocean/air + service level. Example: 1"
+      - name: origin_port_key
+        description: "Where it leaves India. Example: 12"
+      - name: destination_port_key
+        description: "Where it's going. Example: 21"
+      - name: trade_lane
+        description: "Human-readable lane. Example: Nhava Sheva → Los Angeles"
+      - name: destination_region
+        description: "US or UAE business. Example: USA"
+      - name: booking_date
+        description: "Day the booking was confirmed to the customer. Example: 2024-03-04"
+      - name: committed_delivery_date
+        description: "The date promised at booking — the on-time yardstick (§6.1). Example: 2024-04-08"
+      - name: planned_etd
+        description: "Departure planned at booking. Example: 2024-03-10"
+      - name: actual_departure_date
+        description: "When it actually left. Example: 2024-03-12"
+      - name: carrier_eta
+        description: "Carrier's drifting estimate — retained to show the definition divergence, never used for OTD. Example: 2024-04-06"
+      - name: actual_delivery_date
+        description: "When the customer actually received it. Example: 2024-04-11"
+      - name: job_completion_date
+        description: "When ops closed the job in Logi-Sys. Example: 2024-04-13"
+      - name: shipment_status
+        description: "Lifecycle stage. Example: Closed"
+      - name: commodity
+        description: "What's being shipped. Example: Machined auto components"
+      - name: incoterm
+        description: "Commercial terms. Example: CIF"
+      - name: container_count
+        description: "Number of containers (ocean only). Example: 2"
+      - name: teu
+        description: "Twenty-foot-equivalent units (ocean only). Example: 4.0"
+      - name: chargeable_weight_kg
+        description: "Billed weight (air only). Example: 850"
+      - name: committed_transit_days
+        description: "Transit time promised at booking. Example: 29"
+      - name: actual_transit_days
+        description: "Transit time actually taken. Example: 32"
+      - name: transit_variance_days
+        description: "Days late (+) or early (−) vs commitment (§6.5). Example: 3"
+      - name: is_on_time
+        description: "Delivered on/before the committed date (§6.1); null while undelivered. Example: false"
+        tests:
+          - not_null:
+              config:
+                # §6.1 excludes undelivered shipments from OTD entirely — the
+                # spec's blanket not_null is scoped to delivered rows.
+                where: "actual_delivery_date is not null"
+      - name: exception_count
+        description: "Number of problems logged on the job. Example: 1"
+      - name: has_exception
+        description: "Any problem logged. Example: true"
+
+  - name: fact_charges
+    description: "Job cost and surcharge lines from Logi-Sys. Grain: one row per charge line."
+    columns:
+      - name: charge_key
+        description: "Internal charge line ID. Example: 88012"
+        tests: [unique, not_null]
+      - name: shipment_key
+        description: "Job this cost belongs to. Example: 20481"
+      - name: job_number
+        description: "Job number for reconciliation. Example: MUM-SE-24-01847"
+      - name: charge_type_key
+        description: "What kind of cost. Example: 11"
+      - name: customer_key
+        description: "Customer whose job incurred it (denormalised). Example: 104"
+      - name: carrier_key
+        description: "Carrier on the job (denormalised). Example: 7"
+      - name: branch_key
+        description: "Branch owning the job (denormalised). Example: 1"
+      - name: mode_key
+        description: "Mode of the job (denormalised). Example: 1"
+      - name: charge_date
+        description: "When the cost hit the job. Example: 2024-04-19"
+      - name: vendor_name
+        description: "Who we pay. Example: Meridian Container Line"
+      - name: amount_inr
+        description: "Cost in rupees. Example: 48500.00"
+      - name: is_post_closure
+        description: "Landed after the job was closed — the invisible margin eater (§6.2). Example: true"
+
+  - name: fact_invoice_lines
+    description: "Billed revenue lines from Tally. Grain: one row per invoice line."
+    columns:
+      - name: invoice_line_key
+        description: "Internal invoice line ID. Example: 30772"
+        tests: [unique, not_null]
+      - name: invoice_number
+        description: "Tally invoice number the customer sees. Example: MUM/24-25/0463"
+      - name: invoice_type
+        description: "First bill, later top-up, or credit. Example: Original"
+      - name: invoice_date
+        description: "Date invoice was raised. Example: 2024-04-21"
+      - name: due_date
+        description: "When payment falls due. Example: 2024-06-05"
+      - name: customer_key
+        description: "Who is billed. Example: 104"
+      - name: shipment_key
+        description: "Job the line bills for; null when the voucher's job reference didn't match (~1.5% by design). Example: 20481"
+      - name: job_number
+        description: "Job reference exactly as typed on the voucher. Example: MUM-SE-24-01847"
+      - name: branch_key
+        description: "Billing branch. Example: 1"
+      - name: charge_type_key
+        description: "What is being billed. Example: 1"
+      - name: line_description
+        description: "Narration on the invoice. Example: Ocean Freight — Nhava Sheva → Los Angeles"
+      - name: line_amount_inr
+        description: "Billed amount before GST (credit notes negative). Example: 195000.00"
+      - name: tax_amount_inr
+        description: "GST on the line. Example: 35100.00"
+      - name: total_amount_inr
+        description: "Amount receivable for the line. Example: 230100.00"
+
+  - name: fact_payments
+    description: "Receipt allocations from Tally. Grain: one row per payment allocation."
+    columns:
+      - name: payment_key
+        description: "Internal receipt allocation ID. Example: 41220"
+        tests: [unique, not_null]
+      - name: receipt_number
+        description: "Tally receipt voucher. Example: RCPT/24-25/0891"
+      - name: invoice_number
+        description: "Invoice being paid. Example: MUM/24-25/0463"
+      - name: customer_key
+        description: "Who paid. Example: 104"
+      - name: payment_date
+        description: "Day money arrived. Example: 2024-06-18"
+      - name: amount_inr
+        description: "Amount received. Example: 230100.00"
+      - name: payment_mode
+        description: "How they paid. Example: RTGS"
+
+  - name: fact_invoice_settlement
+    description: >
+      AR accumulating snapshot — one authoritative row per receivable invoice,
+      rebuilt each run (§6.9). Credit notes are netted into the invoice they
+      credit and carry no row of their own.
+    columns:
+      - name: invoice_number
+        description: "The invoice. Example: MUM/24-25/0463"
+        tests: [unique, not_null]
+      - name: customer_key
+        description: "Who owes it. Example: 104"
+      - name: branch_key
+        description: "Billing branch. Example: 1"
+      - name: invoice_date
+        description: "Raised on. Example: 2024-04-21"
+      - name: due_date
+        description: "Due by. Example: 2024-06-05"
+      - name: invoice_total_inr
+        description: "Total receivable incl. GST, net of credits. Example: 230100.00"
+      - name: amount_received_inr
+        description: "Collected so far. Example: 230100.00"
+      - name: outstanding_inr
+        description: "Still owed. Example: 0.00"
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= -1000"
+      - name: last_payment_date
+        description: "Latest receipt against it. Example: 2024-06-18"
+      - name: days_overdue
+        description: "How late payment is, past due date (open invoices). Example: 0"
+      - name: aging_bucket
+        description: "AR ageing shelf. Example: Settled"
+        tests: [not_null]
+      - name: is_settled
+        description: "Fully paid. Example: true"
+
+  - name: fact_shipment_financials
+    description: >
+      The profitability join (§3.3.6) — Logi-Sys costs and Tally revenue per
+      completed job, pre-aggregated so Power BI never joins fact tables at
+      query time. This is the table the whole case study exists for.
+    columns:
+      - name: shipment_key
+        description: "The job. Example: 20481"
+        tests: [unique, not_null]
+      - name: job_number
+        description: "Job number. Example: MUM-SE-24-01847"
+      - name: customer_key
+        description: "Customer whose profitability this feeds. Example: 104"
+      - name: carrier_key
+        description: "Carrier used. Example: 7"
+      - name: branch_key
+        description: "Owning branch. Example: 1"
+      - name: mode_key
+        description: "Mode. Example: 1"
+      - name: job_completion_date
+        description: "Month the margin belongs to. Example: 2024-04-13"
+      - name: first_invoice_date
+        description: "First original bill raised. Example: 2024-04-21"
+      - name: billing_lag_days
+        description: "Days between finishing the job and billing it (§6.4). Example: 8"
+      - name: revenue_billed_inr
+        description: "Everything billed to the customer for this job, pre-tax. Example: 214000.00"
+        tests: [not_null]
+      - name: base_cost_inr
+        description: "Normal costs of executing the job. Example: 168300.00"
+      - name: surcharge_cost_inr
+        description: "Surcharges we were charged, incl. post-closure. Example: 31200.00"
+      - name: surcharge_billed_inr
+        description: "Surcharges we managed to bill onward (§6.12 numerator). Example: 9800.00"
+      - name: total_cost_inr
+        description: "All direct cost. Example: 199500.00"
+      - name: gross_margin_inr
+        description: "What the job actually earned (§6.2). Example: 14500.00"
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "> -500000"
+              config:
+                # scoped to billed jobs: unbilled jobs (revenue 0) legitimately
+                # show margin = -total_cost until the invoice is raised
+                where: "is_fully_billed = true"
+      - name: is_fully_billed
+        description: "Job has at least one matched Original invoice. Example: true"
+
+  - name: fact_exceptions
+    description: "Exception events logged against jobs. Grain: one row per event."
+    columns:
+      - name: exception_key
+        description: "Internal exception ID. Example: 5109"
+        tests: [unique, not_null]
+      - name: shipment_key
+        description: "Affected job. Example: 20481"
+      - name: job_number
+        description: "Job number. Example: MUM-SE-24-01847"
+      - name: exception_type_key
+        description: "What went wrong. Example: 3"
+      - name: carrier_key
+        description: "Carrier involved (denormalised). Example: 7"
+      - name: customer_key
+        description: "Customer affected (denormalised). Example: 104"
+      - name: branch_key
+        description: "Branch handling it (denormalised). Example: 1"
+      - name: raised_date
+        description: "When it was logged. Example: 2024-03-18"
+      - name: resolved_date
+        description: "When it was cleared (blank = still open). Example: 2024-03-22"
+      - name: delay_days_attributed
+        description: "Delay days this event added. Example: 3"
+      - name: exception_status
+        description: "Open or Resolved. Example: Resolved"
+
+  - name: fact_pipeline_runs
+    description: >
+      Pipeline monitoring fact for the Technical Notes page. Deliberately
+      unrelated to the business star. Grain: one run per source per hour.
+    columns:
+      - name: run_key
+        description: "Internal run ID. Example: 16044"
+        tests: [unique, not_null]
+      - name: run_timestamp
+        description: "When the hourly run started (UTC). Example: 2024-07-15 09:10:04"
+      - name: run_date
+        description: "Run day, for the date slicer. Example: 2024-07-15"
+      - name: source_system
+        description: "Which feed ran. Example: Logi-Sys"
+        tests:
+          - accepted_values:
+              # 'Warehouse (dbt)' added to the spec's list: the run log also
+              # records the hourly dbt transform stage, not just ingestion.
+              values: ["Logi-Sys", "Tally", "Warehouse (dbt)"]
+      - name: pipeline_stage
+        description: "Ingestion or dbt transform. Example: Ingest"
+      - name: batch_id
+        description: "Fingerprint used to skip duplicate emails. Example: lgs-20240715-09-7f3a"
+      - name: records_processed
+        description: "Rows loaded this hour. Example: 412"
+      - name: records_rejected
+        description: "Rows quarantined this hour. Example: 3"
+      - name: execution_seconds
+        description: "How long the run took. Example: 41.7"
+      - name: run_status
+        description: "Did it work. Example: Success"
+        tests:
+          - accepted_values:
+              values: ["Success", "Failed", "Partial"]
+      - name: error_message
+        description: "Why it failed, null on success. Example: Mailbox unreachable (IMAP timeout)"

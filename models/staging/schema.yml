@@ -1,0 +1,98 @@
+version: 2
+
+# Staging test layer per blueprint §2.5 — every staging model carries
+# not_null / unique / accepted_values / relationships coverage so a malformed
+# Logi-Sys export or a Tally extraction failure surfaces as a test failure
+# before it can reach the marts.
+
+models:
+  - name: stg_logisys__shipments
+    description: Typed, renamed, code-standardised Logi-Sys job records. One row per job.
+    columns:
+      - name: job_number
+        tests:
+          - unique
+          - not_null
+      - name: booking_date
+        tests: [not_null]
+      - name: customer_code
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customer')
+              field: customer_code
+      - name: carrier_code
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_carrier')
+              field: carrier_code
+      - name: mode
+        tests:
+          - accepted_values:
+              values: ["Ocean", "Air"]
+      - name: shipment_status
+        tests:
+          - accepted_values:
+              values: ["Booked", "In Transit", "Delivered", "Closed"]
+
+  - name: stg_logisys__job_charges
+    description: Job cost and surcharge lines. One row per charge line.
+    columns:
+      - name: charge_key
+        tests:
+          - unique
+          - not_null
+      - name: job_number
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_logisys__shipments')
+              field: job_number
+      - name: amount_inr
+        tests: [not_null]
+      - name: charge_category
+        tests:
+          - accepted_values:
+              values: ["Base Cost", "Surcharge"]
+
+  - name: stg_tally__invoice_lines
+    description: Tally sales voucher lines. One row per invoice line.
+    columns:
+      - name: invoice_line_key
+        tests:
+          - unique
+          - not_null
+      - name: invoice_number
+        tests: [not_null]
+      - name: invoice_date
+        tests: [not_null]
+      - name: customer_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customer')
+              field: customer_key
+      - name: invoice_type
+        tests:
+          - accepted_values:
+              values: ["Original", "Supplementary", "Credit Note"]
+
+  - name: stg_tally__payments
+    description: Tally receipt allocations. One row per payment allocation.
+    columns:
+      - name: payment_key
+        tests:
+          - unique
+          - not_null
+      - name: receipt_number
+        tests: [not_null]
+      - name: payment_date
+        tests: [not_null]
+      - name: amount_inr
+        tests: [not_null]
+      - name: invoice_number
+        tests:
+          - relationships:
+              to: ref('stg_tally__invoice_lines')
+              field: invoice_number

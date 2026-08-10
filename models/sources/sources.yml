@@ -1,0 +1,56 @@
+version: 2
+
+# Raw-layer sources. In production these are BigQuery tables landed by the
+# ingestion layer (Logi-Sys: hourly MIS CSV email exports pulled by a Cloud
+# Function; Tally: hourly pushes from the on-prem Python agent over HTTPS).
+# In this local scaffold the generated CSVs in ../output stand in for the raw
+# layer, read in place by DuckDB via external_location — the models are
+# identical either way.
+
+sources:
+  - name: logisys_raw
+    description: >
+      Logi-Sys (Softlink Global) job-level exports. No public API — the MIS
+      report scheduler emails hourly CSVs to a dedicated mailbox; a Cloud
+      Function validates, parses and appends them here.
+    schema: main
+    freshness:
+      warn_after: {count: 2, period: hour}
+      error_after: {count: 4, period: hour}
+    tables:
+      - name: shipments
+        description: One row per Logi-Sys job per export batch (deduplicated in staging).
+        meta:
+          external_location: "read_csv_auto('../output/fact_shipments.csv')"
+      - name: job_charges
+        description: Job cost and surcharge lines from the Logi-Sys costing module.
+        meta:
+          external_location: "read_csv_auto('../output/fact_charges.csv')"
+      - name: exceptions
+        description: Exception events logged by coordinators against jobs.
+        meta:
+          external_location: "read_csv_auto('../output/fact_exceptions.csv')"
+      - name: pipeline_runs
+        description: Ingestion/transform run log written by the pipeline itself.
+        loaded_at_field: run_timestamp
+        meta:
+          external_location: "read_csv_auto('../output/fact_pipeline_runs.csv')"
+
+  - name: tally_raw
+    description: >
+      Tally Prime financial records. Tally's native XML interface listens on
+      localhost only; a Python agent on the same machine queries it hourly and
+      pushes vouchers here over HTTPS.
+    schema: main
+    freshness:
+      warn_after: {count: 2, period: hour}
+      error_after: {count: 4, period: hour}
+    tables:
+      - name: invoice_lines
+        description: Sales voucher lines (Original / Supplementary / Credit Note).
+        meta:
+          external_location: "read_csv_auto('../output/fact_invoice_lines.csv')"
+      - name: payments
+        description: Receipt voucher allocations against invoices.
+        meta:
+          external_location: "read_csv_auto('../output/fact_payments.csv')"

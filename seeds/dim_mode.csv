@@ -1,0 +1,5 @@
+mode_key,mode,service_level,mode_service,unit_of_measure
+1,Ocean,FCL,Ocean — FCL,TEU
+2,Ocean,LCL,Ocean — LCL,TEU
+3,Air,Standard,Air — Standard,Chargeable kg
+4,Air,Express,Air — Express,Chargeable kg

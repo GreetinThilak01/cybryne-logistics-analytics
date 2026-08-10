@@ -1,0 +1,4 @@
+branch_key,branch_code,branch_name,city,state,is_hq
+1,MUM,Mumbai HQ,Mumbai,Maharashtra,True
+2,CHE,Chennai,Chennai,Tamil Nadu,False
+3,AMD,Ahmedabad,Ahmedabad,Gujarat,False

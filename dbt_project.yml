@@ -1,0 +1,41 @@
+name: cybryne_logistics
+version: "1.0.0"
+config-version: 2
+
+profile: cybryne_logistics
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # Snapshot date the synthetic dataset was generated against. All AR ageing
+  # and "as of" logic is deterministic against this date (in production this
+  # is CURRENT_DATE on each hourly run).
+  as_of_date: "2025-01-15"
+  # Go-live of the analytics platform: carrier reallocation and customer
+  # pricing actions take effect from this date (case-study timeline).
+  go_live_date: "2024-07-01"
+  # Expected weekly-report skip rate used by the deterministic reporting-lag
+  # reconstruction in the case-study assertion test (§6.11).
+  report_skip_rate: 0.09
+
+models:
+  cybryne_logistics:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    mart:
+      +materialized: table
+      +schema: mart
+
+seeds:
+  cybryne_logistics:
+    +schema: reference

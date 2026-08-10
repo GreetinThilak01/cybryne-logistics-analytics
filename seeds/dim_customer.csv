@@ -1,0 +1,15 @@
+customer_key,customer_code,tally_ledger_name,customer_name,industry_segment,city,state,home_branch,payment_terms_days,credit_limit_inr,customer_since,kam_owner,is_active
+101,CUST-ARHT,Arihant Auto Components Pvt Ltd (Debtors),Arihant Auto Components Pvt Ltd,Auto Components,Pune,Maharashtra,Mumbai HQ,45,7500000,2022-03-03,S. Kulkarni,True
+102,CUST-TRPL,Trident Polymers Ltd (Debtors),Trident Polymers Ltd,Polymers,Vapi,Gujarat,Mumbai HQ,45,7500000,2016-03-17,A. Menon,False
+103,CUST-SUND,Sundaram Textiles Exports (Debtors),Sundaram Textiles Exports,Textiles,Coimbatore,Tamil Nadu,Chennai,30,4000000,2022-10-03,P. Iyer,True
+104,CUST-KANC,Kanchi Pharma Lifesciences (Debtors),Kanchi Pharma Lifesciences,Pharmaceuticals,Chennai,Tamil Nadu,Chennai,30,10000000,2019-10-21,V. Deshmukh,True
+105,CUST-DECC,Deccan Agro Foods (Debtors),Deccan Agro Foods,Agro Foods,Hyderabad,Telangana,Chennai,30,4000000,2018-06-21,R. Nair,True
+106,CUST-SGSC,Shree Ganesh Specialty Chemicals (Debtors),Shree Ganesh Specialty Chemicals,Chemicals,Ankleshwar,Gujarat,Ahmedabad,30,7500000,2021-07-14,S. Kulkarni,True
+107,CUST-PREC,Precision Gears India (Debtors),Precision Gears India,Engineering,Rajkot,Gujarat,Ahmedabad,30,7500000,2021-10-02,A. Menon,True
+108,CUST-MARU,Marudhar Spice Company (Debtors),Marudhar Spice Company,Spices,Jodhpur,Rajasthan,Mumbai HQ,30,7500000,2020-02-21,P. Iyer,True
+109,CUST-ZENI,Zenith Engineering Works (Debtors),Zenith Engineering Works,Engineering,Mumbai,Maharashtra,Mumbai HQ,30,10000000,2014-12-03,V. Deshmukh,True
+110,CUST-COAS,Coastal Marine Foods (Debtors),Coastal Marine Foods,Seafood,Chennai,Tamil Nadu,Chennai,30,4000000,2017-04-09,R. Nair,True
+111,CUST-OMKA,Omkar Ceramics (Debtors),Omkar Ceramics,Ceramics,Morbi,Gujarat,Ahmedabad,30,10000000,2016-04-23,S. Kulkarni,True
+112,CUST-RAJH,Rajhans Apparel Exports (Debtors),Rajhans Apparel Exports,Apparel,Tiruppur,Tamil Nadu,Chennai,30,10000000,2014-03-05,A. Menon,True
+113,CUST-NALA,Nalanda Handicrafts Export House (Debtors),Nalanda Handicrafts Export House,Handicrafts,Jaipur,Rajasthan,Mumbai HQ,30,5000000,2019-08-13,P. Iyer,True
+114,CUST-VIKR,Vikram Forgings Ltd (Debtors),Vikram Forgings Ltd,Forgings,Ludhiana,Punjab,Mumbai HQ,30,4000000,2018-03-19,V. Deshmukh,True

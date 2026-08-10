@@ -1,0 +1,9 @@
+port_key,port_code,port_name,port_type,city,country,region,trade_lane_role
+1,USLAX,Port of Los Angeles,Seaport,Los Angeles,USA,USA,Destination
+2,USNYC,Port of New York / Newark,Seaport,New York,USA,USA,Destination
+3,AEJEA,Jebel Ali Port,Seaport,Dubai,UAE,UAE,Destination
+4,AEKHL,Khalifa Port,Seaport,Abu Dhabi,UAE,UAE,Destination
+5,LAX,Los Angeles International Airport,Airport,Los Angeles,USA,USA,Destination
+6,JFK,John F. Kennedy International Airport,Airport,New York,USA,USA,Destination
+7,DXB,Dubai International Airport,Airport,Dubai,UAE,UAE,Destination
+8,AUH,Abu Dhabi International Airport,Airport,Abu Dhabi,UAE,UAE,Destination

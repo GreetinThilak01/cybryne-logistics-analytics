@@ -1,0 +1,9 @@
+exception_type_key,exception_code,exception_name,severity,responsible_party
+1,CUS_HOLD,Customs Hold,Medium,Customs
+2,DOC_DISC,Documentation Discrepancy,Medium,Customer
+3,ROLLOVER,Carrier Rollover,High,Carrier
+4,MISS_CONN,Missed Connection,High,Carrier
+5,CNTR_SHORT,Container Shortage,Medium,Carrier
+6,PORT_CONG,Port Congestion,Medium,Forwarder
+7,DAMAGE,Cargo Damage / Short-shipment,High,Carrier
+8,LATE_GATE,Late Gate-In,Low,Carrier
